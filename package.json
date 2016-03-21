@@ -1,0 +1,24 @@
+{
+  "name": "fritz-setup",
+  "version": "0.0.1",
+  "description": "Setup a new project with the Fritz CMS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "fritz",
+    "cms",
+    "frismedia"
+  ],
+  "author": "Sander Bruggeman <sander@frismedia.nl> (http://frismedia.nl)",
+  "license": "ISC",
+  "dependencies": {
+    "extfs": "0.0.7"
+  },
+  "devDependencies": {
+    "adm-zip": "^0.4.7",
+    "prompt": "^1.0.0",
+    "request": "^2.69.0"
+  }
+}

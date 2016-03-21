@@ -1,4 +1,3 @@
-
 var https = require('https');
 var prompt = require('prompt');
 var request = require('request');

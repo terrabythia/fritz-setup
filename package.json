@@ -16,9 +16,7 @@
   "author": "Sander Bruggeman <sander@frismedia.nl> (http://frismedia.nl)",
   "license": "ISC",
   "dependencies": {
-    "extfs": "0.0.7"
-  },
-  "devDependencies": {
+    "extfs": "0.0.7",
     "adm-zip": "^0.4.7",
     "prompt": "^1.0.0",
     "request": "^2.69.0"

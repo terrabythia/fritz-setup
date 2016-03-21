@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 
-var lib= require('index.js');
+var lib= require('./index.js');
 lib.fritzSetup();

@@ -2,7 +2,9 @@
   "name": "fritz-setup",
   "version": "0.0.1",
   "description": "Setup a new project with the Fritz CMS",
-  "main": "index.js",
+  "bin": {
+    "fritz-setup": "index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -45,178 +45,182 @@ function compare_versions(a, b) {
     return 0;
 }
 
-var schema = {
-    properties: {
-        project_name: {
-            description: 'Enter you project\'s work-name',
-            default: '',
-            pattern: /^[a-zA-Z0-9\-_]+$/,
-            message: 'Project name be only letters, dashes or underscores',
-            required: true
-        },
-        project_title: {
-            description: 'Enter you project\'s title',
-            default: '',
-            required: true
-        },
-        bitbucket_account: {
-            description: 'Enter the Bitbucket account',
-            default: 'frismedia',
-            pattern: /^[a-zA-Z\s\-_]+$/,
-            message: 'Account name be only letters, spaces, dashes or underscores',
-            required: true
-        },
-        bitbucket_username: {
-            description: 'Enter your Bitbucket username',
-            default: 'FrisseSander',
-            pattern: /^[a-zA-Z\s\-_]+$/,
-            message: 'Username must be only letters, spaces, dashes or underscores',
-            required: true
-        },
-        bitbucket_password: {
-            description: 'Enter your Bitbucket password',
-            required: true,
-            hidden: true
-        },
-        bitbucket_repo: {
-            description: 'Enter the base project\'s name',
-            default: 'fritz_cms_base_project',
-            required: true
+var fritzSetup = function() {
+    var schema = {
+        properties: {
+            project_name: {
+                description: 'Enter you project\'s work-name',
+                default: '',
+                pattern: /^[a-zA-Z0-9\-_]+$/,
+                message: 'Project name be only letters, dashes or underscores',
+                required: true
+            },
+            project_title: {
+                description: 'Enter you project\'s title',
+                default: '',
+                required: true
+            },
+            bitbucket_account: {
+                description: 'Enter the Bitbucket account',
+                default: 'frismedia',
+                pattern: /^[a-zA-Z\s\-_]+$/,
+                message: 'Account name be only letters, spaces, dashes or underscores',
+                required: true
+            },
+            bitbucket_username: {
+                description: 'Enter your Bitbucket username',
+                default: 'FrisseSander',
+                pattern: /^[a-zA-Z\s\-_]+$/,
+                message: 'Username must be only letters, spaces, dashes or underscores',
+                required: true
+            },
+            bitbucket_password: {
+                description: 'Enter your Bitbucket password',
+                required: true,
+                hidden: true
+            },
+            bitbucket_repo: {
+                description: 'Enter the base project\'s name',
+                default: 'fritz_cms_base_project',
+                required: true
+            }
         }
-    }
-};
+    };
 
 
-prompt.start();
+    prompt.start();
 
-prompt.get(schema, function (err, result) {
+    prompt.get(schema, function (err, result) {
 
-    if (err) {
-        console.log("\n");
-        return;
-    }
-
-    var project_dir = __dirname,
-        project_dir_parts = __dirname.split('/'),
-        project_dir_name = project_dir_parts[project_dir_parts.length-1];
-
-    if (project_dir_name !== result.project_name) {
-        project_dir += '/' + result.project_name;
-        if (fs.existsSync(project_dir) && !fs.isEmptySync(project_dir)) {
-            console.log('The project dir is not empty!');
+        if (err) {
+            console.log("\n");
             return;
         }
-        else if (!fs.existsSync(project_dir)) {
-            fs.mkdirSync(project_dir);
-        }
-    }
 
-    console.log('Downloading latest version of the base project...');
-    var tmpFilePath = './tip.zip';
-    request.get('https://bitbucket.org/'+result.bitbucket_account+'/'+result.bitbucket_repo+'/get/tip.zip', {
+        var project_dir = __dirname,
+            project_dir_parts = __dirname.split('/'),
+            project_dir_name = project_dir_parts[project_dir_parts.length-1];
+
+        if (project_dir_name !== result.project_name) {
+            project_dir += '/' + result.project_name;
+            if (fs.existsSync(project_dir) && !fs.isEmptySync(project_dir)) {
+                console.log('The project dir is not empty!');
+                return;
+            }
+            else if (!fs.existsSync(project_dir)) {
+                fs.mkdirSync(project_dir);
+            }
+        }
+
+        console.log('Downloading latest version of the base project...');
+        var tmpFilePath = './tip.zip';
+        request.get('https://bitbucket.org/'+result.bitbucket_account+'/'+result.bitbucket_repo+'/get/tip.zip', {
             'auth': {
                 'user': result.bitbucket_username,
                 'pass': result.bitbucket_password,
                 'sendImmediately': true
             }
-    }).on('response', function(res){
+        }).on('response', function(res){
 
-        res.on('data', function(data) {
-            fs.appendFileSync(tmpFilePath, data)
-        });
-
-        res.on( 'end', function(){
-            // go on with processing
-            console.log('Download completed.');
-            console.log('Extracting...');
-
-            var zip = new AdmZip(tmpFilePath);
-
-            var entries = zip.getEntries(),
-                parts = entries[0].entryName.split('/'),
-                basename = parts[0];
-
-            entries.forEach(function(entry) {
-                var entryPathParts = entry.entryName.replace(basename + '/', '/').split('/');
-                entryPathParts.pop();
-                zip.extractEntryTo(entry, project_dir + entryPathParts.join('/'), false, true);
+            res.on('data', function(data) {
+                fs.appendFileSync(tmpFilePath, data)
             });
 
-            fs.unlinkSync(tmpFilePath);
-            console.log('Extracting completed. Project initiated.');
-            console.log('Downloading latest version of the Frismedia Library...');
+            res.on( 'end', function(){
+                // go on with processing
+                console.log('Download completed.');
+                console.log('Extracting...');
 
-            request.get('https://api.bitbucket.org/2.0/repositories/'+result.bitbucket_account+'/frismedia_library_2015/refs/tags', {
-                'auth': {
-                    'user': result.bitbucket_username,
-                    'pass': result.bitbucket_password,
-                    'sendImmediately': true
-                }
-            }, function(error, response, body) {
-                var data = JSON.parse(body),
-                    latest = "0.0.0";
-                data.values.forEach(function(tag) {
-                    if ("tip" !== tag.name && compare_versions(tag.name, latest) !== -1) {
-                        latest = tag.name;
-                    }
+                var zip = new AdmZip(tmpFilePath);
+
+                var entries = zip.getEntries(),
+                    parts = entries[0].entryName.split('/'),
+                    basename = parts[0];
+
+                entries.forEach(function(entry) {
+                    var entryPathParts = entry.entryName.replace(basename + '/', '/').split('/');
+                    entryPathParts.pop();
+                    zip.extractEntryTo(entry, project_dir + entryPathParts.join('/'), false, true);
                 });
-                console.log('Latest version is ' + latest + '. Downloading...');
 
-                var tmpFilePath = './library.zip';
-                request.get('https://bitbucket.org/'+result.bitbucket_account+'/frismedia_library_2015/get/'+latest+'.zip', {
+                fs.unlinkSync(tmpFilePath);
+                console.log('Extracting completed. Project initiated.');
+                console.log('Downloading latest version of the Frismedia Library...');
+
+                request.get('https://api.bitbucket.org/2.0/repositories/'+result.bitbucket_account+'/frismedia_library_2015/refs/tags', {
                     'auth': {
                         'user': result.bitbucket_username,
                         'pass': result.bitbucket_password,
                         'sendImmediately': true
                     }
-                }).on('response', function(res){
-
-                    res.on('data', function(data) {
-                        fs.appendFileSync(tmpFilePath, data)
+                }, function(error, response, body) {
+                    var data = JSON.parse(body),
+                        latest = "0.0.0";
+                    data.values.forEach(function(tag) {
+                        if ("tip" !== tag.name && compare_versions(tag.name, latest) !== -1) {
+                            latest = tag.name;
+                        }
                     });
+                    console.log('Latest version is ' + latest + '. Downloading...');
 
-                    res.on( 'end', function(){
+                    var tmpFilePath = './library.zip';
+                    request.get('https://bitbucket.org/'+result.bitbucket_account+'/frismedia_library_2015/get/'+latest+'.zip', {
+                        'auth': {
+                            'user': result.bitbucket_username,
+                            'pass': result.bitbucket_password,
+                            'sendImmediately': true
+                        }
+                    }).on('response', function(res){
 
-                        console.log('Download completed.');
-                        console.log('Extracting...');
-
-                        var zip = new AdmZip(tmpFilePath);
-
-                        var entries = zip.getEntries(),
-                            parts = entries[0].entryName.split('/'),
-                            basename = parts[0] + '/library';
-
-
-                        entries.forEach(function(entry) {
-                            if (entry.entryName.indexOf(basename) !== -1) {
-                                var entryPathParts = entry.entryName.replace(basename + '/', '/').split('/');
-                                entryPathParts.pop();
-                                zip.extractEntryTo(entry, project_dir + '/vendor/frismedia/' + entryPathParts.join('/'), false, true);
-                            }
+                        res.on('data', function(data) {
+                            fs.appendFileSync(tmpFilePath, data)
                         });
 
-                        fs.unlinkSync(tmpFilePath);
+                        res.on( 'end', function(){
 
-                        // create info.json file for later updates
-                        var versionInfo = {
-                            version: latest
-                        };
+                            console.log('Download completed.');
+                            console.log('Extracting...');
 
-                        fs.writeFile(project_dir + '/vendor/frismedia/info.json', JSON.stringify(versionInfo));
+                            var zip = new AdmZip(tmpFilePath);
 
-                        console.log('Extracting completed.');
-                        console.log('Your project is ready. Run `composer update` to install vendor dependencies.');
+                            var entries = zip.getEntries(),
+                                parts = entries[0].entryName.split('/'),
+                                basename = parts[0] + '/library';
+
+
+                            entries.forEach(function(entry) {
+                                if (entry.entryName.indexOf(basename) !== -1) {
+                                    var entryPathParts = entry.entryName.replace(basename + '/', '/').split('/');
+                                    entryPathParts.pop();
+                                    zip.extractEntryTo(entry, project_dir + '/vendor/frismedia/' + entryPathParts.join('/'), false, true);
+                                }
+                            });
+
+                            fs.unlinkSync(tmpFilePath);
+
+                            // create info.json file for later updates
+                            var versionInfo = {
+                                version: latest
+                            };
+
+                            fs.writeFile(project_dir + '/vendor/frismedia/info.json', JSON.stringify(versionInfo));
+
+                            console.log('Extracting completed.');
+                            console.log('Your project is ready. Run `composer update` to install vendor dependencies.');
+
+                        });
 
                     });
 
                 });
 
-            });
 
+            });
 
         });
 
     });
+};
 
-});
+module.exports.fritzSetup = fritzSetup;
 

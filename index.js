@@ -96,8 +96,8 @@ var fritzSetup = function() {
             return;
         }
 
-        var project_dir = __dirname,
-            project_dir_parts = __dirname.split('/'),
+        var project_dir = process.cwd(),
+            project_dir_parts = project_dir.split('/'),
             project_dir_name = project_dir_parts[project_dir_parts.length-1];
 
         if (project_dir_name !== result.project_name) {

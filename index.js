@@ -91,6 +91,11 @@ prompt.start();
 
 prompt.get(schema, function (err, result) {
 
+    if (err) {
+        console.log("\n");
+        return;
+    }
+
     var project_dir = __dirname,
         project_dir_parts = __dirname.split('/'),
         project_dir_name = project_dir_parts[project_dir_parts.length-1];

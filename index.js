@@ -4,6 +4,8 @@ var request = require('request');
 var zlib = require('zlib');
 var fs = require('extfs');
 
+var chalk = require('chalk');
+
 var wrench = require('wrench'),
     util = require('util');
 
@@ -245,51 +247,6 @@ var fritzSetup = function() {
                                 });
                             }
 
-                            //schema = {
-                            //    properties: {
-                            //        setup_db: {
-                            //            description: 'Do you want to setup the local database now?',
-                            //            type: 'boolean',
-                            //            default: true,
-                            //            required: true
-                            //        }
-                            //    }
-                            //};
-                            //
-                            //// TODO: auto setup the database...
-                            //prompt.get(schema, function(err, result2) {
-                            //    if (result2.setup_db) {
-                            //        schema = {
-                            //            properties: {
-                            //                db_host: {
-                            //                    description: 'Database host',
-                            //                    type: 'string',
-                            //                    default: 'localhost',
-                            //                    required: true
-                            //                },
-                            //                db_username: {
-                            //                    description: 'Database username',
-                            //                    type: 'string',
-                            //                    default: 'root',
-                            //                    required: true
-                            //                },
-                            //                db_password: {
-                            //                    description: 'Database password',
-                            //                    type: 'password',
-                            //                    required: true
-                            //                },
-                            //                db_name: {
-                            //                    description: 'Database name',
-                            //                    type: 'string',
-                            //                    default: result.project_name,
-                            //                    required: true
-                            //                }
-                            //            }
-                            //        }
-                            //    }
-                            //
-                            //});
-
                             // Recursively chmod the entire sub-tree of a directory
                             wrench.chmodSyncRecursive(project_dir + '/storage', 0777);
 
@@ -305,12 +262,20 @@ var fritzSetup = function() {
                                 wrench.chmodSyncRecursive(process.env.FILE_CACHE_PATH, 0777);
                             }
 
-                            if (!project_dir_created) {
-                                console.log('Your project is ready. Run `composer update` to install vendor dependencies.');
+                            console.log("\n");
+                            console.log('Your project is initiated. Follow the following steps to complete the setup:');
+
+                            var step = 1;
+                            console.log(chalk.bold(step + '. Create the database `' + result.project_name + '`.'));
+                            step++;
+                            console.log(chalk.bold(step + '. Run `php artisan migrate` to setup the database tables.'));
+                            step++;
+                            if (project_dir_created) {
+                                console.log(chalk.bold(step + '. Run `cd ' + result.project_name +'`'));
+                                step++;
                             }
-                            else {
-                                console.log('Your project is ready. Run `cd ' + result.project_name +'` and `composer update` to install vendor dependencies.');
-                            }
+                            console.log(chalk.bold(step + '. Run `composer update` to install vendor dependencies.'));
+                            console.log("\n");
 
                         });
 

@@ -229,7 +229,7 @@ var fritzSetup = function() {
                                     encoding: 'utf8'
                                 });
                                 var parts = project_dir.split('/');
-                                var workspace_and_project = parts[parts.length-2] + '/' + parts[parts.length-1];
+                                var workspace_and_project = parts[parts.length-1] + '/' + parts[parts.length-2];
                                 contents = contents.replace('{{project_base}}', workspace_and_project);
                                 fs.writeFileSync(project_dir + '/DEFAULT/.htaccess', contents, {
                                     encoding: 'utf8'

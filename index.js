@@ -76,7 +76,7 @@ var fritzSetup = function() {
             },
             bitbucket_username: {
                 description: 'Enter your Bitbucket username',
-                default: 'FrisseSander',
+                default: '',
                 pattern: /^[a-zA-Z\s\-_]+$/,
                 message: 'Username must be only letters, spaces, dashes or underscores',
                 required: true
@@ -222,52 +222,71 @@ var fritzSetup = function() {
                             console.log('Setting up your htaccess and environment file');
 
                             if (fs.existsSync(project_dir + '/TEMPLATE.env')) {
-                                var contents = fs.readFileSync(project_dir + '/TEMPLATE.env', {
+                                var env_contents = fs.readFileSync(project_dir + '/TEMPLATE.env', {
                                     encoding: 'utf8'
                                 });
-                                contents = contents.replace('{{project_name}}', result.project_name);
-                                fs.writeFileSync(project_dir + '/.env', contents, {
+                                env_contents = env_contents.replace('{{website_title}}', result.project_title);
+                                env_contents = env_contents.replace('{{project_name}}', result.project_name);
+                                env_contents = env_contents.replace('{{db_name}}', result.project_name);
+                                fs.writeFileSync(project_dir + '/.env', env_contents, {
                                     encoding: 'utf8'
                                 });
                             }
 
                             if (fs.existsSync(project_dir + '/DEFAULT/TEMPLATE.htaccess')) {
-                                var contents = fs.readFileSync(project_dir + '/DEFAULT/TEMPLATE.htaccess', {
+                                var htaccess_contents = fs.readFileSync(project_dir + '/DEFAULT/TEMPLATE.htaccess', {
                                     encoding: 'utf8'
                                 });
-                                var parts = project_dir.split('/');
-                                var workspace_and_project = parts[parts.length-2] + '/' + parts[parts.length-1];
-                                contents = contents.replace('{{project_base}}', workspace_and_project);
-                                fs.writeFileSync(project_dir + '/DEFAULT/.htaccess', contents, {
+                                var project_base = project_dir.split('/');
+                                var workspace_and_project = project_base[project_base.length-2] + '/' + project_base[project_base.length-1];
+                                htaccess_contents = htaccess_contents.replace('{{project_base}}', workspace_and_project);
+                                fs.writeFileSync(project_dir + '/DEFAULT/.htaccess', htaccess_contents, {
                                     encoding: 'utf8'
                                 });
                             }
 
-                            schema = {
-                                properties: {
-                                    setup_db: {
-                                        description: 'Do you want to setup the local database now?',
-                                        type: 'boolean',
-                                        default: true,
-                                        required: true
-                                    }
-                                }
-                            };
-
-                            // TODO: auto setup the database...
+                            //schema = {
+                            //    properties: {
+                            //        setup_db: {
+                            //            description: 'Do you want to setup the local database now?',
+                            //            type: 'boolean',
+                            //            default: true,
+                            //            required: true
+                            //        }
+                            //    }
+                            //};
+                            //
+                            //// TODO: auto setup the database...
                             //prompt.get(schema, function(err, result2) {
                             //    if (result2.setup_db) {
                             //        schema = {
                             //            properties: {
-                            //                setup_db: {
-                            //                    description: 'Do you want to setup the local database now?',
-                            //                    type: 'boolean',
-                            //                    default: true,
+                            //                db_host: {
+                            //                    description: 'Database host',
+                            //                    type: 'string',
+                            //                    default: 'localhost',
+                            //                    required: true
+                            //                },
+                            //                db_username: {
+                            //                    description: 'Database username',
+                            //                    type: 'string',
+                            //                    default: 'root',
+                            //                    required: true
+                            //                },
+                            //                db_password: {
+                            //                    description: 'Database password',
+                            //                    type: 'password',
+                            //                    required: true
+                            //                },
+                            //                db_name: {
+                            //                    description: 'Database name',
+                            //                    type: 'string',
+                            //                    default: result.project_name,
                             //                    required: true
                             //                }
                             //            }
                             //        }
-                            //    };
+                            //    }
                             //
                             //});
 

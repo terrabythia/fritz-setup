@@ -4,6 +4,9 @@ var request = require('request');
 var zlib = require('zlib');
 var fs = require('extfs');
 
+var wrench = require('wrench'),
+    util = require('util');
+
 var AdmZip = require('adm-zip');
 
 // TODO: chmod dirs?
@@ -151,7 +154,10 @@ var fritzSetup = function() {
 
                 fs.unlinkSync(tmpFilePath);
                 console.log('Extracting completed. Project initiated.');
+
                 console.log('Downloading latest version of the Frismedia Library...');
+
+                // TODO: library hoeft misschien ook helemaal niet want die wordt door composer ge-installeerd...
 
                 request.get('https://api.bitbucket.org/2.0/repositories/'+result.bitbucket_account+'/frismedia_library_2015/refs/tags', {
                     'auth': {
@@ -169,6 +175,7 @@ var fritzSetup = function() {
                     });
                     console.log('Latest version is ' + latest + '. Downloading...');
 
+                    // De eerste keer halen we wel de fris library op, want die bevat de updater die daarna gebruikt kan worden voor fris library updates
                     var tmpFilePath = './library.zip';
                     request.get('https://bitbucket.org/'+result.bitbucket_account+'/frismedia_library_2015/get/'+latest+'.zip', {
                         'auth': {
@@ -234,6 +241,49 @@ var fritzSetup = function() {
                                 fs.writeFileSync(project_dir + '/DEFAULT/.htaccess', contents, {
                                     encoding: 'utf8'
                                 });
+                            }
+
+                            schema = {
+                                properties: {
+                                    setup_db: {
+                                        description: 'Do you want to setup the local database now?',
+                                        type: 'boolean',
+                                        default: true,
+                                        required: true
+                                    }
+                                }
+                            };
+
+                            // TODO: auto setup the database...
+                            //prompt.get(schema, function(err, result2) {
+                            //    if (result2.setup_db) {
+                            //        schema = {
+                            //            properties: {
+                            //                setup_db: {
+                            //                    description: 'Do you want to setup the local database now?',
+                            //                    type: 'boolean',
+                            //                    default: true,
+                            //                    required: true
+                            //                }
+                            //            }
+                            //        }
+                            //    };
+                            //
+                            //});
+
+                            // Recursively chmod the entire sub-tree of a directory
+                            wrench.chmodSyncRecursive(project_dir + '/storage', 0777);
+
+                            require('dotenv').config({
+                                silent: true,
+                                path: project_dir + '/.env'
+                            });
+
+                            if (process.env && process.env.FILE_CACHE_PATH) {
+                                if (!fs.existsSync(process.env.FILE_CACHE_PATH)) {
+                                    fs.mkdirSync(process.env.FILE_CACHE_PATH);
+                                }
+                                wrench.chmodSyncRecursive(process.env.FILE_CACHE_PATH, 0777);
                             }
 
                             if (!project_dir_created) {

@@ -18,8 +18,10 @@
   "dependencies": {
     "adm-zip": "^0.4.7",
     "chalk": "^1.1.1",
+    "dotenv": "^2.0.0",
     "extfs": "0.0.7",
     "prompt": "^1.0.0",
-    "request": "^2.69.0"
+    "request": "^2.69.0",
+    "wrench": "^1.5.8"
   }
 }

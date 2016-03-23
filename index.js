@@ -87,11 +87,6 @@ var fritzSetup = function() {
                 description: 'Enter your Bitbucket password',
                 required: true,
                 hidden: true
-            },
-            bitbucket_repo: {
-                description: 'Enter the base project\'s name',
-                default: 'fritz_cms_base_project',
-                required: true
             }
         }
     };
@@ -125,7 +120,7 @@ var fritzSetup = function() {
 
         console.log('Downloading latest version of the base project...');
         var tmpFilePath = './tip.zip';
-        request.get('https://bitbucket.org/'+result.bitbucket_account+'/'+result.bitbucket_repo+'/get/tip.zip', {
+        request.get('https://bitbucket.org/'+result.bitbucket_account+'/frismedia_library_2015/get/tip.zip', {
             'auth': {
                 'user': result.bitbucket_username,
                 'pass': result.bitbucket_password,
@@ -146,12 +141,14 @@ var fritzSetup = function() {
 
                 var entries = zip.getEntries(),
                     parts = entries[0].entryName.split('/'),
-                    basename = parts[0];
+                    basename = parts[0] + '/base_project';
 
                 entries.forEach(function(entry) {
-                    var entryPathParts = entry.entryName.replace(basename + '/', '/').split('/');
-                    entryPathParts.pop();
-                    zip.extractEntryTo(entry, project_dir + entryPathParts.join('/'), false, true);
+                    if (entry.entryName.indexOf(basename) !== -1) {
+                        var entryPathParts = entry.entryName.replace(basename + '/', '/').split('/');
+                        entryPathParts.pop();
+                        zip.extractEntryTo(entry, project_dir + entryPathParts.join('/'), false, true);
+                    }
                 });
 
                 fs.unlinkSync(tmpFilePath);
@@ -202,7 +199,6 @@ var fritzSetup = function() {
                                 parts = entries[0].entryName.split('/'),
                                 basename = parts[0] + '/library';
 
-
                             entries.forEach(function(entry) {
                                 if (entry.entryName.indexOf(basename) !== -1) {
                                     var entryPathParts = entry.entryName.replace(basename + '/', '/').split('/');
@@ -221,7 +217,7 @@ var fritzSetup = function() {
                             fs.writeFile(project_dir + '/vendor/frismedia/info.json', JSON.stringify(versionInfo));
 
                             console.log('Extracting completed.');
-                            console.log('Setting up your htaccess and environment file');
+                            console.log('Setting up your htaccess and environment file...');
 
                             if (fs.existsSync(project_dir + '/TEMPLATE.env')) {
                                 var env_contents = fs.readFileSync(project_dir + '/TEMPLATE.env', {
@@ -247,8 +243,33 @@ var fritzSetup = function() {
                                 });
                             }
 
+                            // create (possibly) empty dirs that the framework needs
+                            var storage_dirs_must_exist = [
+                                '/storage/app',
+                                '/storage/clockwork',
+                                '/storage/debugbar',
+                                '/storage/framework',
+                                '/storage/framework/cache',
+                                '/storage/framework/flatten',
+                                '/storage/framework/sessions',
+                                '/storage/framework/views',
+                                '/storage/httpcache',
+                                '/storage/logs',
+                                '/storage/screenshots',
+                                '/storage/uploads',
+                                '/storage/uploads/tmp',
+                                '/uploads',
+                            ];
+
+                            for (var i = 0; i < storage_dirs_must_exist.length; i++) {
+                                if (!fs.existsSync(project_dir + storage_dirs_must_exist[i])) {
+                                    fs.mkdirSync(project_dir + storage_dirs_must_exist[i]);
+                                }
+                            }
+
                             // Recursively chmod the entire sub-tree of a directory
                             wrench.chmodSyncRecursive(project_dir + '/storage', 0777);
+                            wrench.chmodSyncRecursive(project_dir + '/uploads', 0777);
 
                             require('dotenv').config({
                                 silent: true,
@@ -268,13 +289,15 @@ var fritzSetup = function() {
                             var step = 1;
                             console.log(chalk.bold(step + '. Create the database `' + result.project_name + '`.'));
                             step++;
-                            console.log(chalk.bold(step + '. Run `php artisan migrate` to setup the database tables.'));
-                            step++;
                             if (project_dir_created) {
                                 console.log(chalk.bold(step + '. Run `cd ' + result.project_name +'`'));
                                 step++;
                             }
-                            console.log(chalk.bold(step + '. Run `composer update` to install vendor dependencies.'));
+                            console.log(chalk.bold(step + '. Run `composer install` to install vendor dependencies.'));
+                            step++;
+                            console.log(chalk.bold(step + '. Run `php artisan fritz-init-db` to setup the database tables.'));
+                            step++;
+
                             console.log("\n");
 
                         });

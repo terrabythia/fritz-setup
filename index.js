@@ -3,6 +3,10 @@ var prompt = require('prompt');
 var request = require('request');
 var zlib = require('zlib');
 var fs = require('extfs');
+var Q = require('q');
+
+var sys = require('sys');
+var exec = require('child_process').exec;
 
 var chalk = require('chalk');
 
@@ -54,7 +58,47 @@ function compare_versions(a, b) {
     return 0;
 }
 
+
+var downloadHelper = function(url, options) {
+
+    var deferred = Q.defer();
+
+    var _data = null;
+    request.get(url, options)
+        .on('response', function(res) {
+
+            res.on('data', function(data) {
+                if (null === data) {
+                    _data = data;
+                }
+                else {
+                    data += data;
+                }
+            });
+
+            res.on( 'end', function(){
+                deferred.resolve(data);
+            });
+
+        });
+
+    return deferred.promise;
+
+};
+
+
 var fritzSetup = function() {
+
+    // TODO: first check if it is maybe an existing Fritz project
+    // search for .env file? Deze moet er wel altijd zijn eigenlijk...
+
+    var project_dir = process.cwd();
+    var EXISTING_PROJECT = false;
+
+    if (fs.existsSync(project_dir + '/.env')) {
+        EXISTING_PROJECT = true;
+    }
+
     var schema = {
         properties: {
             project_name: {
@@ -91,6 +135,10 @@ var fritzSetup = function() {
         }
     };
 
+    if (EXISTING_PROJECT) {
+        delete schema.properties.project_name;
+        delete scheme.properties.project_title;
+    }
 
     prompt.start();
 
@@ -101,9 +149,9 @@ var fritzSetup = function() {
             return;
         }
 
-        var project_dir = process.cwd(),
-            project_dir_parts = project_dir.split('/'),
-            project_dir_name = project_dir_parts[project_dir_parts.length-1];
+        project_dir = process.cwd();
+        var project_dir_parts = project_dir.split('/'),
+        project_dir_name = project_dir_parts[project_dir_parts.length-1];
 
         var project_dir_created = false;
         if (project_dir_name !== result.project_name) {
@@ -120,7 +168,7 @@ var fritzSetup = function() {
 
         console.log('Downloading latest version of the base project...');
         var tmpFilePath = './tip.zip';
-        request.get('https://bitbucket.org/'+result.bitbucket_account+'/frismedia_library_2015/get/tip.zip', {
+        request.get('https://bitbucket.org/'+result.bitbucket_account+'/frismedia_library_2016/get/tip.zip', {
             'auth': {
                 'user': result.bitbucket_username,
                 'pass': result.bitbucket_password,
@@ -158,7 +206,7 @@ var fritzSetup = function() {
 
                 // TODO: library hoeft misschien ook helemaal niet want die wordt door composer ge-installeerd...
 
-                request.get('https://api.bitbucket.org/2.0/repositories/'+result.bitbucket_account+'/frismedia_library_2015/refs/tags', {
+                request.get('https://api.bitbucket.org/2.0/repositories/'+result.bitbucket_account+'/frismedia_library_2016/refs/tags', {
                     'auth': {
                         'user': result.bitbucket_username,
                         'pass': result.bitbucket_password,
@@ -176,7 +224,7 @@ var fritzSetup = function() {
 
                     // De eerste keer halen we wel de fris library op, want die bevat de updater die daarna gebruikt kan worden voor fris library updates
                     var tmpFilePath = './library.zip';
-                    request.get('https://bitbucket.org/'+result.bitbucket_account+'/frismedia_library_2015/get/'+latest+'.zip', {
+                    request.get('https://bitbucket.org/'+result.bitbucket_account+'/frismedia_library_2016/get/'+latest+'.zip', {
                         'auth': {
                             'user': result.bitbucket_username,
                             'pass': result.bitbucket_password,
@@ -282,6 +330,39 @@ var fritzSetup = function() {
                                 }
                                 wrench.chmodSyncRecursive(process.env.FILE_CACHE_PATH, 0777);
                             }
+
+                            //prompt.start();
+                            //prompt.get({
+                            //    properties: {
+                            //        create_repo: {
+                            //            description: 'Do you want to create a bitbucket repo for this ',
+                            //            type: 'bool',
+                            //            default: true
+                            //        }
+                            //    }
+                            //}, function(err, result2) {
+                            //    if (result2.create_repo) {
+                            //        prompt.start();
+                            //        schema = {
+                            //            properties: {
+                            //                repo_name: {
+                            //                    description: 'What should the repository\'s name be?',
+                            //                    default: result.project_name
+                            //                }
+                            //            }
+                            //        };
+                            //        prompt.get(schema, function(err, result3) {
+                            //
+                            //            request.post('https://api.bitbucket.org/2.0/repositories/'+result.bitbucket_account+')
+                            //
+                            //        });
+                            //    }
+                            //});
+                            //console.log('Creating symlink to the local library for your new project.');
+                            //exec('ln -s /Users/webserver/Desktop/workspace\ mac/sander/frismedia_library_2016/library /Users/webserver/Desktop/workspace\ mac/sander/bartimeus_website/vendor/frismedia');
+
+                            // TODO: misschien een symlink naar de lokale Frismedia Library? Of is dat iets wat je zelf handmatig moet doen?
+                            // Het zou wel heel chill zijn als je daar heel makkelijk tussen kunt switchen om te testen...
 
                             console.log("\n");
                             console.log('Your project is initiated. Follow the following steps to complete the setup:');

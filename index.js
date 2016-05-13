@@ -376,6 +376,8 @@ var fritzSetup = function() {
                             }
                             console.log(chalk.bold(step + '. Run `composer install` to install vendor dependencies.'));
                             step++;
+                            console.log(chalk.bold(step + '. Run `php artisan key:generate` to generate a key for your application.'));
+                            step++;
                             console.log(chalk.bold(step + '. Run `php artisan fritz-init-db` to setup the database tables.'));
                             step++;
 

@@ -292,26 +292,22 @@ var fritzSetup = function() {
                             }
 
                             // create (possibly) empty dirs that the framework needs
-                            var storage_dirs_must_exist = [
+                            var dirs_must_exist = [
                                 '/storage/app',
                                 '/storage/clockwork',
                                 '/storage/debugbar',
-                                '/storage/framework',
-                                '/storage/framework/cache',
-                                '/storage/framework/flatten',
-                                '/storage/framework/sessions',
-                                '/storage/framework/views',
+                                '/storage/framework', '/storage/framework/cache', '/storage/framework/flatten', '/storage/framework/sessions', '/storage/framework/views',
                                 '/storage/httpcache',
                                 '/storage/logs',
                                 '/storage/screenshots',
-                                '/storage/uploads',
-                                '/storage/uploads/tmp',
+                                '/storage/uploads', '/storage/uploads/tmp',
                                 '/uploads',
+                                '/DEFAULT', '/DEFAULT/img', '/DEFAULT/img/cache'
                             ];
 
-                            for (var i = 0; i < storage_dirs_must_exist.length; i++) {
-                                if (!fs.existsSync(project_dir + storage_dirs_must_exist[i])) {
-                                    fs.mkdirSync(project_dir + storage_dirs_must_exist[i]);
+                            for (var i = 0; i < dirs_must_exist.length; i++) {
+                                if (!fs.existsSync(project_dir + dirs_must_exist[i])) {
+                                    fs.mkdirSync(project_dir + dirs_must_exist[i]);
                                 }
                             }
 
@@ -330,39 +326,6 @@ var fritzSetup = function() {
                                 }
                                 wrench.chmodSyncRecursive(process.env.FILE_CACHE_PATH, 0777);
                             }
-
-                            //prompt.start();
-                            //prompt.get({
-                            //    properties: {
-                            //        create_repo: {
-                            //            description: 'Do you want to create a bitbucket repo for this ',
-                            //            type: 'bool',
-                            //            default: true
-                            //        }
-                            //    }
-                            //}, function(err, result2) {
-                            //    if (result2.create_repo) {
-                            //        prompt.start();
-                            //        schema = {
-                            //            properties: {
-                            //                repo_name: {
-                            //                    description: 'What should the repository\'s name be?',
-                            //                    default: result.project_name
-                            //                }
-                            //            }
-                            //        };
-                            //        prompt.get(schema, function(err, result3) {
-                            //
-                            //            request.post('https://api.bitbucket.org/2.0/repositories/'+result.bitbucket_account+')
-                            //
-                            //        });
-                            //    }
-                            //});
-                            //console.log('Creating symlink to the local library for your new project.');
-                            //exec('ln -s /Users/webserver/Desktop/workspace\ mac/sander/frismedia_library_2016/library /Users/webserver/Desktop/workspace\ mac/sander/bartimeus_website/vendor/frismedia');
-
-                            // TODO: misschien een symlink naar de lokale Frismedia Library? Of is dat iets wat je zelf handmatig moet doen?
-                            // Het zou wel heel chill zijn als je daar heel makkelijk tussen kunt switchen om te testen...
 
                             console.log("\n");
                             console.log('Your project is initiated. Follow the following steps to complete the setup:');

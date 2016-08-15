@@ -15,13 +15,6 @@ var wrench = require('wrench'),
 
 var AdmZip = require('adm-zip');
 
-// TODO: chmod dirs?
-// TODO: use the project name for initialization
-// TODO: maybe add the project to bitbucket?
-// TODO: run the website and register what should be done before it can really run (and add it to fritz-setup)
-
-// TODO: get from bitbucket?
-// TODO: also auto install latest version of fris library
 function compare_versions(a, b) {
     if (a === b) {
         return 0;

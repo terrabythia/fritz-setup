@@ -215,6 +215,7 @@ var fritzSetup = function() {
                 }, function(error, response, body) {
                     var data = JSON.parse(body),
                         latest = "0.0.0";
+                    console.log(body);
                     data.values.forEach(function(tag) {
                         console.log("tagname: " + tag.name);
                         if ("tip" !== tag.name && compare_versions(tag.name, latest) !== -1) {

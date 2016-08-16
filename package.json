@@ -1,6 +1,6 @@
 {
-  "name": "fritz-setup",
-  "version": "0.0.2",
+  "name": "fritz-setup-2",
+  "version": "2.0.0",
   "description": "Setup a new project with the Fritz CMS",
   "bin": {
     "fritz-setup": "module.js"

@@ -199,7 +199,7 @@ var fritzSetup = function() {
 
                 // TODO: library hoeft misschien ook helemaal niet want die wordt door composer ge-installeerd...
 
-                request.get('https://api.bitbucket.org/2.0/repositories/'+result.bitbucket_account+'/frismedia_library_2016/refs/tags', {
+                request.get('https://api.bitbucket.org/2.0/repositories/'+result.bitbucket_account+'/frismedia_library_2016/refs/tags?page=1000', {
                     'auth': {
                         'user': result.bitbucket_username,
                         'pass': result.bitbucket_password,

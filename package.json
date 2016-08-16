@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "description": "Setup a new project with the Fritz CMS",
   "bin": {
-    "fritz-setup": "module.js"
+    "fritz-setup-2": "module.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

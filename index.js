@@ -130,7 +130,7 @@ var fritzSetup = function() {
 
     if (EXISTING_PROJECT) {
         delete schema.properties.project_name;
-        delete scheme.properties.project_title;
+        delete schema.properties.project_title;
     }
 
     prompt.start();
